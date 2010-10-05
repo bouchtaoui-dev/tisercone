@@ -1,0 +1,6 @@
+Tiny Server Core Network
+
+This application works as a base for a network server application. By default it runs as a simple network server. You can connect to it through tcp/ip and send data to it. The data is then logged to a log-file. Depending on how you build it, it can run as a daemon. The purpose of this application is to add your own implementation on how to interpret data that is sent over tcp/ip. You can make it work as a simple SMTP server, or make it work as a gps tracker.
+
+It's not complete yet, I need to add CMakefile.txt files to build the project using CMake. At this moment I build the project using Code::Blocks IDE.
+
