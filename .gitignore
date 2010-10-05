@@ -1,0 +1,9 @@
+*.cbp
+*.depend
+*.layout
+obj
+*.o
+*.log
+*.file
+
+
