@@ -1,5 +1,5 @@
 /*****
-Author: Andaluz
+Author: El Andaluz
 Date: 29/07/2010
 Description:
 This is a core network service template,
@@ -22,10 +22,12 @@ which could be a base for a network service app.
 #include <servercore/io_interface.h>
 #include <servercore/io_process.h>
 #include <servercore/log_writer.h>
+#include <servercore/select_timer.h>
+
 
 static char* setting_file = NULL;
 static char* debug_file = NULL;
-static int32_t portnr = 4321;   //default port number
+static int32_t portnr = 4321;
 
 static void print_usage()
 {
@@ -101,18 +103,29 @@ void receive_sock(int fd, char* data, int len)
 int main(int argc, char** argv)
 {
     int32_t running = 0;
+    struct timer_caller tc1, tc2;
+
+    tc1.id = 1, tc2.id = 2;
+    tc1.heap = tc2.heap = 0;
+    tc1.tv.tv_sec = 10;
+    tc2.tv.tv_sec = 14;
+    tc1.tv.tv_usec = tc2.tv.tv_usec = 0;
+    tc1.cb_timer = tc2.cb_timer = NULL;
+
+    enqueue_timer_caller(&tc1);
+    enqueue_timer_caller(&tc2);
+
 
     handle_options(argc, argv);
-
     init_debug(debug_file);
-
-    DEBUG_MSG("Running value is: %d.", running);
 
     DEBUG_MSG("Starting TCP server for remote connection...");
     if(init_tcp_server(portnr, NULL, receive_sock) < 0) {
         DEBUG_MSG("error during tcp server initialization.");
         return EXIT_FAILURE;
     }
+
+
 
     DEBUG_MSG("Start listening for connections on port %d.", portnr);
     running = 1;
