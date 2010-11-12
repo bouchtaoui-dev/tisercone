@@ -6,7 +6,7 @@
 #include <servercore/msg_handler.h>
 #include <servercore/log_writer.h>
 
-//Eerst de binnengekomen data in de buffer aanvullen
+
 int32_t appendbuffer(struct msgobject* msgbuff, char* buffer, int32_t len)
 {
 	//Check eerst op risico van buffer overflow!
@@ -31,6 +31,10 @@ int32_t getcompletemsg(struct msgobject* msgbuff, struct msgobject* helpbuff)
 
 	//len is dus het uieindelijke bericht: TLV zonder header.
 	len = msgbuff->msg[1]|(msgbuff->msg[2]<<8);
+
+	if(!len)
+        return 0;
+
 	if(msgbuff->len < len)
 		return 0;	//len klopt niet, dit zou niet mogen gebeuren
 

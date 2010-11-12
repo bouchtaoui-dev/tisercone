@@ -46,7 +46,7 @@
 #include <servercore/log_writer.h>
 #include <servercore/msg_handler.h>
 
-
+#include <servercore/select_timer.h>
 
 enum socktype {unknown, client, cliblu2, gsm, bsc};
 
@@ -71,6 +71,7 @@ extern void received_accept_from_client(int32_t fd);
 int32_t recv_tcp_cb(struct fd_obj* fdo)
 {
 	int32_t rcvbytes = 0;
+	struct timer_caller* tc3 = malloc(sizeof(struct timer_caller));
 
 	DEBUG_MSG("Receiving data from client.");
 	rcvbytes = recv(fdo->fd, glbdata, MAX_BUF_SIZE, 0);
@@ -84,18 +85,22 @@ int32_t recv_tcp_cb(struct fd_obj* fdo)
 	} else {
 		appendbuffer(&tcpbuff,glbdata, rcvbytes);
 		memset(glbdata, 0x00, rcvbytes);
-		if(getcompletemsg(&tcpbuff, &tempbuff))
-			tcp_app_callback(fdo->fd, tempbuff.msg, tempbuff.len);	//doe de callback!
+		while(getcompletemsg(&tcpbuff, &tempbuff))
+			tcp_app_callback(fdo->fd, tempbuff.msg, tempbuff.len);
 
 		memset(&tempbuff, 0x00, sizeof(struct msgobject));
 	}
 
+	tc3->id = 3;
+    tc3->heap = 1;
+    tc3->tv.tv_sec = 3;
+    tc3->tv.tv_usec = 0;
+    tc3->cb_timer = NULL;
+    enqueue_timer_caller(tc3);
+
 	return 0;
 }
 
-
-//Deze functie is nu even niet nodig.
-//Deze fd kunnen we gebruiken om met de buitenwereld te verbinden.
 
 int32_t accept_new_client(struct fd_obj* fdo)
 {

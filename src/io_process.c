@@ -6,11 +6,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/time.h>
 
 #include <servercore/io_process.h>
+#include <servercore/select_timer.h>
 #include <servercore/log_writer.h>
 
 
@@ -67,26 +69,27 @@ void remove_fdo(int32_t fd)
 	}
 }
 
-//Dit is de kern v/d applicatie, waar de hele app op gebaseerd is
+/* This is the core the application is based on */
 int32_t io_select()
 {
 	int32_t running = 1;
 	int32_t timed_out = 1;
-	struct timeval time_out;
+	struct timeval tv;
+	struct timer_caller* tc = NULL;
 
+    timerclear(&tv);
 	while(running)
 	{
 		struct fd_obj* fdo, *tmp;
 		fd_set fsread;
 		int32_t res = 0;
 
-		/* indien geen timeout, dan de resterende tijd meenemen */
-		if(timed_out) {
-			time_out.tv_sec = 1;
-			time_out.tv_usec = 0;
-		}
-
-		timed_out = 0;
+        tc = dequeue_timer_caller();
+        if(tc) {
+            memcpy(&tv, &tc->tv, sizeof(struct timeval));
+            DEBUG_MSG("dequeued tc, id: %d  timeout: %ld", tc->id,
+             tc->tv.tv_sec);
+        } else timerclear(&tv);
 
 		FD_ZERO(&fsread);
 		llist_for_each_entry(fdo, &io_fdobj, list)
@@ -94,10 +97,14 @@ int32_t io_select()
 			FD_SET(fdo->fd, &fsread);
 		}
 
-		res = select(glbmaxfd+1, &fsread, 0, 0, &time_out);
-		if(res < 0)
+		res = select(glbmaxfd+1, &fsread, 0, 0, timerisset(&tv)?&tv:NULL);
+		if(res < 0) {
 			running = 0;
-		else if(res) {
+			continue;
+		}
+
+		update_timer_list();
+		if(res) {
 			llist_for_each_entry_safe(fdo, tmp, &io_fdobj, list)
 			{
 				if(FD_ISSET(fdo->fd, &fsread)) {
@@ -108,13 +115,10 @@ int32_t io_select()
 				}
 			}
 		} else {
-			timed_out = 1;
-			llist_for_each_entry(fdo, &io_fdobj, list)
-			{
-				if(fdo->th)
-					fdo->th();
-			}
+			if(tc)
+                dispatch_timer_caller(tc);
 		}
+		update_timer_list();
 	}
 
 	return 0;

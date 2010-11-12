@@ -28,12 +28,14 @@
 
 #include <servercore/log_writer.h>
 
+#define MAX_LOG_LEN 1024
+
 static char* default_log_name = "network.server.log";
 static FILE* fp_debug = NULL;
-static char glb_debug_buff[128];
-static char glb_debug_msg[256];
+static char glb_debug_buff[MAX_LOG_LEN] = {0};
+static char glb_debug_msg[MAX_LOG_LEN] = {0};
 static int glb_debug_running = 0;
-static char time_string[64];
+static char time_string[64] = {0};
 
 void init_debug(char* filename)
 {
@@ -72,21 +74,26 @@ void write_debug_msg(char* file, int line, const char* format, ...)
 {
 	if(glb_debug_running) {
 		va_list args;
-		memset(glb_debug_buff, 0x00, 128);
-		memset(glb_debug_msg, 0x00, 256);
+		memset(glb_debug_buff, 0x00, MAX_LOG_LEN);
+		memset(glb_debug_msg, 0x00, MAX_LOG_LEN);
+
+#ifdef DEBUG
+        va_start ( args, format );
+        vsprintf(glb_debug_buff, format, args );
+        va_end ( args );
+        sprintf(glb_debug_msg, "[%s]: %s\n", get_timestamp(), glb_debug_buff );
+        fprintf ( stdout, glb_debug_msg );
+        fflush( fp_debug );
+#else
 		if(fp_debug) {
 			va_start ( args, format );
 			vsprintf(glb_debug_buff, format, args );
 			va_end ( args );
-#ifdef DEBUG
-			sprintf(glb_debug_msg, "[%s]: %s\n", get_timestamp(), glb_debug_buff );
-			fprintf ( stdout, glb_debug_msg );
-#else
 			sprintf(glb_debug_msg, "[%s][%s-%d]: %s\n", get_timestamp(), file, line, glb_debug_buff );
 			fprintf ( fp_debug, glb_debug_msg );
 			fflush( fp_debug );
-#endif
 		}
+#endif
 	}
 }
 
