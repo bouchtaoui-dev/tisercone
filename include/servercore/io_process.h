@@ -12,7 +12,7 @@
 
 #include "linuxlist.h"
 
-
+#define MAX_BUFFER_SIZE 1024
 
 struct fd_obj {
 	struct llist_head list;
@@ -21,7 +21,7 @@ struct fd_obj {
 	int32_t (*fh)(struct fd_obj* fdo);
 	void (*th)(void);	//th = timer handler
 	struct sockaddr* psockaddr;
-	void* data;
+	char data[MAX_BUFFER_SIZE];
 };
 
 int32_t io_select();
@@ -31,4 +31,4 @@ void remove_fdo(int32_t fd);
 
 #endif //_IO_PROCESS_H
 
-#endif // header guard 
+#endif // header guard
