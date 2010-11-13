@@ -1,10 +1,10 @@
-/*****
-Author: El Andaluz
-Date: 29/07/2010
-Description:
-This is a core network service template,
-which could be a base for a network service app.
-*/
+/**
+ * Author: El Andaluz
+ * Date: 29/07/2010
+ * Description:
+ * This is a core network service template,
+ * which could be a base for a network service app.
+ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -103,24 +103,12 @@ void receive_sock(int fd, char* data, int len)
 int main(int argc, char** argv)
 {
     int32_t running = 0;
-    struct timer_caller tc1, tc2;
-
-    tc1.id = 1, tc2.id = 2;
-    tc1.heap = tc2.heap = 0;
-    tc1.tv.tv_sec = 10;
-    tc2.tv.tv_sec = 14;
-    tc1.tv.tv_usec = tc2.tv.tv_usec = 0;
-    tc1.cb_timer = tc2.cb_timer = NULL;
-
-    enqueue_timer_caller(&tc1);
-    enqueue_timer_caller(&tc2);
-
 
     handle_options(argc, argv);
     init_debug(debug_file);
 
     DEBUG_MSG("Starting TCP server for remote connection...");
-    if(init_tcp_server(portnr, NULL, receive_sock) < 0) {
+    if(init_tcp_server(portnr, (char*)NULL, receive_sock) < 0) {
         DEBUG_MSG("error during tcp server initialization.");
         return EXIT_FAILURE;
     }
@@ -131,7 +119,6 @@ int main(int argc, char** argv)
     running = 1;
     while(running)
 	{
-		sleep(1);   //in case of a runnaway
 		io_select();
 	}
 
