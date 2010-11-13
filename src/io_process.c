@@ -73,17 +73,15 @@ void remove_fdo(int32_t fd)
 int32_t io_select()
 {
 	int32_t running = 1;
-	int32_t timed_out = 1;
+	int32_t res = 0;
+	struct fd_obj* fdo, *tmp;
 	struct timeval tv;
 	struct timer_caller* tc = NULL;
+	fd_set fsread;
 
     timerclear(&tv);
 	while(running)
 	{
-		struct fd_obj* fdo, *tmp;
-		fd_set fsread;
-		int32_t res = 0;
-
         tc = dequeue_timer_caller();
         if(tc) {
             memcpy(&tv, &tc->tv, sizeof(struct timeval));

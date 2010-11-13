@@ -1,6 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2009 by nordin el bouchtaoui														   *
- *   nordin@digivox.nl
+ *   Copyright (C) 2009 by nordin el bouchtaoui
  *
  * Hier doen we ook de afhandeling of een bericht compleet is of niet!
  * De check is gebaseerd op de eerste 3 bytes (genaamd messageheader), nl:
@@ -9,7 +8,7 @@
  * We checken of een bericht compleet verstuurd is en zo niet, dan bewaren in
  * een "emmer". Is bericht wel compleet, dan de header er afslopen en verder
  * versturen naar afhandeling. Je zou dan eigenlijk voor elk verbinding een
- * MSGOBJECT objectje willen hebben die de data bewaart en vervoglens kopieert
+ * MSGOBJECT objectje willen hebben die de data bewaart en vervolgens kopieert
  * naar een algemene buffer in geval van een compleet bericht en dan
  * uiteindelijk die versturen voor verdere verwerking. Zo een buffer is wel
  * een struct object met o.a. een veld wat aangeeft tot hoeveel de buffer
@@ -45,33 +44,21 @@
 #include <servercore/io_interface.h>
 #include <servercore/log_writer.h>
 #include <servercore/msg_handler.h>
+#include <servercore/eth_sock.h>
 
-#include <servercore/select_timer.h>
-
-enum socktype {unknown, client, cliblu2, gsm, bsc};
-
-static int32_t client_fd = -1;
-static int32_t server_tcp_fd = -1;
-//static struct sockaddr_in serveraddr_tcp;
-
-//callbacks die in hoofdapplicaties geroepen worden
-static void (*tcp_app_callback)(int32_t fd, char* data, int32_t len);
-
-//buffers
-static char glbdata[MAX_BUF_SIZE];
-static char info_buffer[MAX_BUF_SIZE/4];
 
 //TODO: msgobject moet in fd_object zitten, zo heeft elk fd een eigen buffer.
 static struct msgobject tcpbuff = {0};
 static struct msgobject tempbuff = {0};
+static int32_t client_fd = -1;
+static void (*tcp_app_callback)(int32_t fd, char* data, int32_t len);
+static char glbdata[MAX_BUF_SIZE];
 
 extern void received_accept_from_client(int32_t fd);
-
 
 int32_t recv_tcp_cb(struct fd_obj* fdo)
 {
 	int32_t rcvbytes = 0;
-	struct timer_caller* tc3 = malloc(sizeof(struct timer_caller));
 
 	DEBUG_MSG("Receiving data from client.");
 	rcvbytes = recv(fdo->fd, glbdata, MAX_BUF_SIZE, 0);
@@ -90,13 +77,6 @@ int32_t recv_tcp_cb(struct fd_obj* fdo)
 
 		memset(&tempbuff, 0x00, sizeof(struct msgobject));
 	}
-
-	tc3->id = 3;
-    tc3->heap = 1;
-    tc3->tv.tv_sec = 3;
-    tc3->tv.tv_usec = 0;
-    tc3->cb_timer = NULL;
-    enqueue_timer_caller(tc3);
 
 	return 0;
 }
@@ -123,7 +103,6 @@ int32_t accept_new_client(struct fd_obj* fdo)
 		DEBUG_MSG("Can't add fd's.");
 	} else {
 		new_fdo->fh = recv_tcp_cb;
-		//new_fdo->th = bsc_timer_handler;
 	}
 
 	DEBUG_MSG("Added client to the list.");
@@ -131,7 +110,7 @@ int32_t accept_new_client(struct fd_obj* fdo)
 	return client;
 }
 
-int32_t init_tcp_server(int32_t portnr, char ip,
+int32_t init_tcp_server(int32_t portnr, char* ip,
                         void (*rcv_cb)(int32_t fd, char* data, int32_t len))
 {
     int fd;
@@ -154,9 +133,3 @@ int32_t init_tcp_server(int32_t portnr, char ip,
 
 	return 0;
 }
-
-
-
-
-
-

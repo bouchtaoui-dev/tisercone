@@ -3,6 +3,11 @@ Here we do all the sockethandling like creating a socket listener,
 a socket fd for connecting to the other side etc...
 */
 
+/**
+ * TODO: Every fdo should have its own buffer to read/send data
+ */
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -26,7 +31,6 @@ a socket fd for connecting to the other side etc...
 /*Create a socket fd to connect to another socket*/
 int32_t connect_socket(unsigned char * ipaddr, int32_t portnr, int32_t protocol)
 {
-	//we maken hier een socket aan, dus wij zijn dan de client.
 	/*create a socket fd*/
 	int32_t clientfd;
 	struct sockaddr_in clientaddr;
@@ -60,7 +64,6 @@ int32_t connect_socket(unsigned char * ipaddr, int32_t portnr, int32_t protocol)
 int32_t send_to_client(int fd, char* data, int32_t len)
 {
 	int32_t sentbytes = 0;
-	int32_t size = len;
 
 	do {
 		sentbytes = send(fd, data, len, 0);
@@ -78,10 +81,9 @@ int32_t create_listener(char* ip, int port, int type, int protocol, int backlog)
     int fd;
     int on = 1;
     int32_t res = 0;
-	struct fd_obj* new_fdo = NULL;
+
 	struct sockaddr_in serveraddr_tcp = {0};
 
-	//memset(&serveraddr_tcp, 0x00, sizeof(serveraddr_tcp));
 	serveraddr_tcp.sin_family = AF_INET;
 	serveraddr_tcp.sin_port = htons(port);
 	if(ip) {
@@ -89,8 +91,8 @@ int32_t create_listener(char* ip, int port, int type, int protocol, int backlog)
         serveraddr_tcp.sin_addr.s_addr = inet_addr(ip);
 	} else serveraddr_tcp.sin_addr.s_addr = INADDR_ANY; //ip
 
-	//fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	fd = socket(AF_INET, type, protocol); //check of het gelukt is.
+
+	fd = socket(AF_INET, type, protocol);
 	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
 	res = bind(fd, (struct sockaddr*) &serveraddr_tcp, sizeof(serveraddr_tcp));

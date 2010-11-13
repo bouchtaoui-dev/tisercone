@@ -1,5 +1,13 @@
-/*
- * This timer construction works only with select().
+/**
+ * Author: El Andaluz
+ * Real name: Nordin el Bouchtaoui
+ * Date: 10/11/2010
+ * Description:
+ * This timer construction works only with select(). You can create
+ * a timer object with a certain time and add it to the timer list.
+ * If the time value passed, it will call the callback function you
+ * provided in the timer object.
+ *
  * It has an accuracy in the microsecond range, but the accuracy is
  * not guaranteed. It depends on how fast your system is, how many
  * processes running on your system, etc...
@@ -7,21 +15,20 @@
  * Example usage:
  * struct timer_caller* tc = malloc(sizeof(struct timer_caller));
  * if(tc) {
- *      tc->tv.tv_sec = 4;
- *      tc->tv.tv_usec = 0;
- *      tc->cb_timer = foo;
- *      tc->heap = 1;   //tc is gecreeerd met malloc(), dus daarna opruimen.
- *      enqueue_timer_caller(tc);
+ *      tc->tv.tv_sec = 4;  //set seconds
+ *      tc->tv.tv_usec = 0; //set microseconds
+ *      tc->cb_timer = foo; //callback function to be called
+ *      tc->heap = 1;   //tc is created from the heap (malloc),
+                        //if you don't set, it results a memoryleak.
+ *      enqueue_timer_caller(tc);   //add the timer object to the list,
+                                    //and timer starts ticking ;-)
  * }
- *
- * struct timer_caller* tc = dequeue_timer_caller();
- * .......
- * select(...);
- * .......
- * dispatch_timer_caller(tc);
  */
 
+#include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
 #include <servercore/select_timer.h>
 #include <servercore/log_writer.h>
 
@@ -29,8 +36,6 @@
 static LLIST_HEAD(timer_qu);
 static struct timeval cur_time = {0};
 static struct timeval prev_time = {0};
-static int is_initialized = 0;
-
 
 void init_timer_select(void)
 {
@@ -131,7 +136,6 @@ struct timer_caller* dequeue_timer_caller(void)
 
 
     llist_for_each_entry(tc, &timer_qu, list) {
-        tc;
         break;
     }
 
