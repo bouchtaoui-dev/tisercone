@@ -1,6 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2009 by nordin digivox   *
- *   nordin@digivox.nl   *
+ *   Author: El Andaluz
  *                                                                         *
  *                                                                         *
  *   This program is distributed in the hope that it will be useful,       *

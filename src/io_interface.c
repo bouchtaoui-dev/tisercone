@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2009 by nordin el bouchtaoui
+ *   El Andaluz
  *
  * Hier doen we ook de afhandeling of een bericht compleet is of niet!
  * De check is gebaseerd op de eerste 3 bytes (genaamd messageheader), nl:
