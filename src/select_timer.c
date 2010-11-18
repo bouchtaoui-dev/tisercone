@@ -67,7 +67,6 @@ void update_timer_list(void)
             /* sometimes, diff is some microseconds bigger than the
              * shortest time, that's why we need to correct the remaining time
              * by setting it to zero.*/
-            //memset(&tc->tv, 0x00, sizeof(struct timeval));
             tc->tv.tv_sec = 0;
             tc->tv.tv_usec = 0;
         }

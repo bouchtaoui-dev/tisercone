@@ -62,6 +62,7 @@ int32_t recv_tcp_cb(struct fd_obj* fdo)
 
 	DEBUG_MSG("Receiving data from client.");
 	rcvbytes = recv(fdo->fd, glbdata, MAX_BUF_SIZE, 0);
+	//rcvbytes = recv(fdo->fd, fdo->data, MAX_BUF_SIZE, 0);
 	if(rcvbytes == 0)	{
 		DEBUG_MSG("Client connection closed!");
 		return -1;
@@ -70,7 +71,8 @@ int32_t recv_tcp_cb(struct fd_obj* fdo)
 		DEBUG_MSG("Client error on receive!");
 		return -1;
 	} else {
-		appendbuffer(&tcpbuff,glbdata, rcvbytes);
+		//appendbuffer(&tcpbuff,glbdata, rcvbytes);
+		appendbuffer(fdo->data,glbdata, rcvbytes);
 		memset(glbdata, 0x00, rcvbytes);
 		while(getcompletemsg(&tcpbuff, &tempbuff))
 			tcp_app_callback(fdo->fd, tempbuff.msg, tempbuff.len);
